@@ -24,22 +24,24 @@ scale = StandardScaler()
 logreg = LogisticRegression()
 pca = PCA(n_components=2)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state = 21)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state = 21)
 
 pipe = Pipeline(steps=[('scaler', scale),('components', pca), ('logistic', logreg)])
 
 param_grid = {'logistic__C': [0.0001, 0.001, 0.01, 1, 10], 
               'logistic__penalty': ['l1', 'l2']}
 
-gs = GridSearchCV(estimator=pipe, param_grid=param_grid, cv=5)
+gs = GridSearchCV(estimator=pipe, param_grid=param_grid, cv=5, scoring='roc_auc')
 
 gs.fit(X_train, y_train.values.reshape(-1,))
 
-y_pred = gs.predict(X_test)
+best_model = gs.best_estimator_
+
+y_pred = best_model.predict(X_test)
 
 y_score = accuracy_score(y_test, y_pred)
 
-y_pred_prob = gs.predict_proba(X_test)[ :, 1]
+y_pred_prob = best_model.predict_proba(X_test)[ :, 1]
 
 fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
 
