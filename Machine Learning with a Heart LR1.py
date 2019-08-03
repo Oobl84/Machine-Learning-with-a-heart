@@ -13,6 +13,7 @@ from sklearn.metrics import roc_curve
 from sklearn.metrics import accuracy_score, log_loss
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
+import numpy as np
 import matplotlib.pyplot as plt
 
 X = pd.read_csv(r"C:\Users\ruban\OneDrive\Documents\Python Notes\Machine Learning with a Heart\train_values.csv", index_col=0)
@@ -20,32 +21,24 @@ y = pd.read_csv(r"C:\Users\ruban\OneDrive\Documents\Python Notes\Machine Learnin
 
 X = pd.get_dummies(X, drop_first=True)
 
+seed = 42
+
 scale = StandardScaler()
-logreg = LogisticRegression()
+logreg = LogisticRegression(C=0.4393970560760795,random_state=seed)
 pca = PCA(n_components=2)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state = 21)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state = seed)
 
-pipe = Pipeline(steps=[('scaler', scale),('components', pca), ('logistic', logreg)])
+c_space = np.logspace(-5, 8, 15)
+param_grid = {'C': c_space}
 
-param_grid = {'logistic__C': [0.0001, 0.001, 0.01, 1, 10], 
-              'logistic__penalty': ['l1', 'l2']}
+pipe_log = Pipeline(steps=[('scaler', scale), ('principal components', pca), ('logistic', logreg)])
 
-gs = GridSearchCV(estimator=pipe, param_grid=param_grid, cv=5, scoring='roc_auc')
+pipe_log.fit(X_train, y_train)
 
-gs.fit(X_train, y_train.values.reshape(-1,))
+y_pred = pipe_log.predict(X_test)
 
-best_model = gs.best_estimator_
+y_pred_prob = pipe_log.predict_proba(X_test)
 
-y_pred = best_model.predict(X_test)
+print('Accuracy : {:.3f} , loss log : {:.3f}'.format(accuracy_score(y_test, y_pred), log_loss(y_test, y_pred_prob)))
 
-y_score = accuracy_score(y_test, y_pred)
-
-y_pred_prob = best_model.predict_proba(X_test)[ :, 1]
-
-fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
-
-plt.plot(fpr, tpr, linestyle='solid')
-plt.show()
-
-print("Logistic Regression : {:.3f} , Log Loss : {:.3f}".format(y_score, log_loss(y_test, y_pred_prob)))
