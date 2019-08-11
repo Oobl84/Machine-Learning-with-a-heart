@@ -9,23 +9,26 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.metrics import roc_curve
 from sklearn.metrics import accuracy_score, log_loss
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 X = pd.read_csv(r"C:\Users\ruban\OneDrive\Documents\Python Notes\Machine Learning with a Heart\train_values.csv", index_col=0)
 y = pd.read_csv(r"C:\Users\ruban\OneDrive\Documents\Python Notes\Machine Learning with a Heart\train_labels.csv", index_col=0)
 
 X = pd.get_dummies(X, drop_first=True)
 
+sns.set()
+
 seed = 42
 
 scale = MinMaxScaler()
-logreg = LogisticRegression(C=0.432, penalty='l2',random_state=seed)
-pca = PCA()
+logreg = LogisticRegression(C=0.432, penalty='l1',random_state=seed)
+pca = PCA(n_components=7)
+
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state = seed)
 
@@ -56,6 +59,6 @@ submission_format = pd.read_csv(r"C:\Users\ruban\OneDrive\Documents\Python Notes
 predictions = pipe_log.predict_proba(test_values)[:, 1]
 
 
-#my_submission_6 = pd.DataFrame(data=predictions, columns = submission_format.columns, index=submission_format.index)
+#my_submission_7 = pd.DataFrame(data=predictions, columns = submission_format.columns, index=submission_format.index)
 
-#my_submission_6.to_csv(r"C:\Users\ruban\OneDrive\Documents\Python Notes\Machine Learning with a Heart\my_submission_6.csv")
+#my_submission_7.to_csv(r"C:\Users\ruban\OneDrive\Documents\Python Notes\Machine Learning with a Heart\my_submission_7.csv")
